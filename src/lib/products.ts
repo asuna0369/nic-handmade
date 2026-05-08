@@ -1,0 +1,106 @@
+import type { Product } from '../types';
+
+export const products: Product[] = [
+  {
+    id: '1',
+    name: 'Sac Raphia Naturel',
+    description: 'Sac artisanal en raphia tressé à la main par les artisans de Madagascar. Finitions soignées et design intemporel, ce sac incarne l\'excellence de l\'artisanat malgache. Chaque pièce est unique, tissée avec soin à partir de fibres de raphia naturelles.',
+    price: 45000,
+    image_url: '/images/collections/WhatsApp_Image_2026-04-07_at_09.42.27_(1).jpeg?auto=compress&cs=tinysrgb&w=800',
+    category: 'Crochet',
+    featured: true,
+    in_stock: true,
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: '2',
+    name: 'Sac Cabas en Vannerie',
+    description: 'Grand cabas en vannerie naturelle, idéal pour le quotidien. Tressé à la main avec des fibres naturelles, ce sac spacieux accompagne vos journées avec élégance. Sa grande contenance en fait un compagnon parfait pour le marché ou les sorties.',
+    price: 55000,
+    image_url: '/images/collections/WhatsApp_Image_2026-04-07_at_09.42.20_(2).jpeg?auto=compress&cs=tinysrgb&w=800',
+    category: 'Coton',
+    featured: true,
+    in_stock: true,
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: '3',
+    name: 'Sac Pochette Artisanale',
+    description: 'Élégante pochette artisanale avec motifs traditionnels malgaches. Parfaite pour les soirées et les occasions spéciales, cette pochette allie tradition et modernité dans un format compact et raffiné.',
+    price: 35000,
+    image_url: '/images/collections/WhatsApp_Image_2026-04-07_at_09.42.21_(2).jpeg?auto=compress&cs=tinysrgb&w=800',
+    category: 'pochette',
+    featured: true,
+    in_stock: true,
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: '4',
+    name: 'Sac Bandoulière Raphia',
+    description: 'Sac bandoulière en raphia avec bandoulière ajustable. Pratique et élégant pour toutes les occasions, ce sac se porte à l\'épaule ou en travers. Son design épuré met en valeur le travail artisanal du raphia.',
+    price: 42000,
+    image_url: '/images/collections/WhatsApp_Image_2026-04-07_at_09.42.22_(1).jpeg?auto=compress&cs=tinysrgb&w=800',
+    category: 'Crochet',
+    featured: false,
+    in_stock: true,
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: '5',
+    name: 'Sac Shopping Vannerie',
+    description: 'Sac shopping spacieux en vannerie naturelle. Parfait pour le marché ou la plage, ce grand sac combine robustesse et légèreté. Ses anses confortables et sa grande ouverture en font un accessoire indispensable.',
+    price: 60000,
+    image_url: '/images/collections/WhatsApp_Image_2026-04-07_at_09.42.19.jpeg?auto=compress&cs=tinysrgb&w=800',
+    category: 'Crochet',
+    featured: true,
+    in_stock: true,
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: '6',
+    name: 'Sac Mini Raphia Coloré',
+    description: 'Mini sac en raphia avec touches de couleurs vives. Accessoire tendance fait main, ce petit sac apporte une note de fraîcheur et d\'originalité à vos tenues. Idéal pour les promenades et les brunchs.',
+    price: 30000,
+    image_url: '/images/collections/WhatsApp Image 2026-04-07 at 09.42.25 (1).jpeg?auto=compress&cs=tinysrgb&w=800',
+    category: 'Coton',
+    featured: false,
+    in_stock: true,
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: '7',
+    name: 'Sac Seau Artisanal',
+    description: 'Sac seau en fibres naturelles tressées. Design moderne et artisanat traditionnel réunis dans une silhouette élancée. Sa forme seau offre un espace généreux tout en conservant une allure raffinée.',
+    price: 50000,
+    image_url: '/images/collections/WhatsApp Image 2026-04-07 at 09.42.23 (1).jpeg?auto=compress&cs=tinysrgb&w=800',
+    category: 'Coton',
+    featured: true,
+    in_stock: true,
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: '8',
+    name: 'Sac de Soirée Brodé',
+    description: 'Petit sac de soirée avec broderies artisanales délicates. Un chef-d\'oeuvre de l\'artisanat malgache, ce sac raffiné est orné de broderies minutieuses qui témoignent du savoir-faire exceptionnel de nos artisans.',
+    price: 40000,
+    image_url: '/images/collections/WhatsApp Image 2026-04-07 at 09.42.23.jpeg?auto=compress&cs=tinysrgb&w=800',
+    category: 'pochette',
+    featured: false,
+    in_stock: true,
+    created_at: new Date().toISOString(),
+  },
+];
+
+export const categories = [
+  { id: 'all', label: 'Tous' },
+  { id: 'Coton', label: 'Coton' },
+  { id: 'Crochet', label: 'Crochet' },
+  { id: 'pochette', label: 'Pochette' },
+];
+
+export function formatPrice(price: number): string {
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'EUR',
+  }).format(price);
+}
