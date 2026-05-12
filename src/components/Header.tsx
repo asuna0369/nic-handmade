@@ -9,8 +9,16 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleScrollToCollection = () => {
-    const el = document.getElementById('collection');
-    el?.scrollIntoView({ behavior: 'smooth' });
+    navigate('home');
+    // Attendre que la page d'accueil soit complètement chargée
+    setTimeout(() => {
+      requestAnimationFrame(() => {
+        const el = document.getElementById('collection');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    }, 300);
   };
 
   const navItems = [
@@ -55,15 +63,6 @@ export default function Header() {
 
           {/* ACTIONS */}
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => {
-                navigate('admin');
-                setMobileMenuOpen(false);
-              }}
-              className="text-xs text-stone-400 hover:text-amber-700 transition-colors"
-            >
-              Admin
-            </button>
 
             {/* CTA */}
             <button
@@ -86,6 +85,17 @@ export default function Header() {
                 </span>
               )}
             </button>
+                      <button
+            onClick={() => navigate('admin')}
+            className="p-2 rounded-full hover:bg-stone-100 transition-colors"
+            aria-label="Administration"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-stone-500 hover:text-amber-700 transition-colors">
+              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </button>
+
 
             {/* MENU MOBILE BTN */}
             <button
@@ -122,13 +132,14 @@ export default function Header() {
               </button>
             ))}
             <button
-              onClick={() => {
-                navigate('admin');
-                setMobileMenuOpen(false);
-              }}
-              className="text-xs text-stone-400 hover:text-amber-700 transition-colors"
+              onClick={() => navigate('admin')}
+              className="p-2 rounded-full hover:bg-stone-100 transition-colors"
+              aria-label="Administration"
             >
-              Admin
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-stone-500 hover:text-amber-700 transition-colors">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
             </button>
 
             {/* CTA MOBILE */}

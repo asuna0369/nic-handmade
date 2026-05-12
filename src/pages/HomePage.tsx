@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { categories, formatPrice } from '../lib/products'; // on garde les catégories et le formateur
+import { categories, formatPrice } from '../lib/products';
 import ProductCard from '../components/ProductCard';
 import { useCart } from '../context/CartContext';
 import { usePage } from '../context/PageContext';
@@ -10,6 +10,7 @@ import type { Product } from '../types';
 
 export default function HomePage() {
   const [activeCategory, setActiveCategory] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
   const { addItem } = useCart();
   const { navigate, setSelectedProductId } = usePage();
   const [products, setProducts] = useState<Product[]>([]);
@@ -27,10 +28,14 @@ export default function HomePage() {
     fetchProducts();
   }, []);
 
-  const filteredProducts =
-    activeCategory === 'all'
-      ? products
-      : products.filter(p => p.category === activeCategory);
+  const filteredProducts = products.filter(p => {
+    const matchesCategory = activeCategory === 'all' || p.category === activeCategory;
+    const matchesSearch = searchTerm === '' || 
+      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.description.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   const featuredProducts = products.filter(p => p.featured);
 
@@ -47,25 +52,79 @@ export default function HomePage() {
     <div>
       <Hero />
 
+
+
       {/* Features */}
-      <section className="py-20 bg-white">
+      <section className="py-24 bg-gradient-to-b from-white to-stone-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          
+          {/* En-tête de section */}
+          <div className="text-center mb-16">
+            <p className="text-xs font-bold uppercase tracking-[0.3em] text-amber-700 mb-4">
+              Pourquoi nous choisir
+            </p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-stone-900 tracking-tight">
+              L'excellence artisanale
+            </h2>
+            <div className="w-16 h-[2px] bg-amber-700 mx-auto mt-6"></div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
             {[
-              { icon: Leaf, title: '100% Naturel', desc: 'Fibres de raphia et vannerie issues de la nature' },
-              { icon: Heart, title: 'Fait Main', desc: 'Chaque sac est unique, tressé avec soin' },
-              { icon: Globe, title: 'Artisanat d\'Exception', desc: 'Des techniques maîtrisées pour des créations uniques' },
-              { icon: Star, title: 'Qualité Premium', desc: 'Finitions soignées et matériaux durables' },
-            ].map(feature => (
+              { 
+                icon: Leaf, 
+                title: 'Matériaux Nobles', 
+                desc: 'Matériaux soigneusement sélectionnés pour leur qualité et leur beauté.',
+                color: 'from-emerald-500 to-green-600'
+              },
+              { 
+                icon: Heart, 
+                title: 'Fait Main', 
+                desc: 'Chaque sac est unique, tressé avec soin par des artisans passionnés.',
+                color: 'from-rose-500 to-red-600'
+              },
+              { 
+                icon: Globe, 
+                title: 'Artisanat d\'Exception', 
+                desc: 'Des techniques ancestrales maîtrisées pour des créations authentiques.',
+                color: 'from-amber-500 to-orange-600'
+              },
+              { 
+                icon: Star, 
+                title: 'Qualité Premium', 
+                desc: 'Finitions soignées et matériaux durables pour des sacs qui traversent le temps.',
+                color: 'from-violet-500 to-purple-600'
+              },
+            ].map((feature, index) => (
               <div
                 key={feature.title}
-                className="flex flex-col items-center text-center p-6 rounded-2xl bg-stone-50/80 border border-stone-100 hover:border-amber-200 hover:bg-amber-50/30 transition-all duration-300"
+                className="group relative bg-white rounded-2xl p-8 shadow-sm hover:shadow-xl border border-stone-100 hover:border-transparent transition-all duration-500 overflow-hidden"
               >
-                <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mb-4">
-                  <feature.icon className="w-5 h-5 text-amber-700" />
+                {/* Fond avec dégradé au survol */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-5 transition-opacity duration-500 rounded-2xl`} />
+                
+                {/* Numéro de la carte */}
+                <div className="absolute -top-6 -right-6 text-8xl font-bold text-stone-50 group-hover:text-stone-100 transition-colors duration-500 select-none">
+                  {String(index + 1).padStart(2, '0')}
                 </div>
-                <h3 className="text-sm font-bold text-stone-900 mb-1.5">{feature.title}</h3>
-                <p className="text-xs text-stone-500 leading-relaxed">{feature.desc}</p>
+
+                {/* Icône */}
+                <div className={`relative w-14 h-14 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-6 shadow-lg transform group-hover:scale-110 group-hover:-translate-y-1 transition-all duration-500`}>
+                  <feature.icon className="w-6 h-6 text-white" />
+                </div>
+
+                {/* Titre */}
+                <h3 className="relative text-lg font-bold text-stone-900 mb-3 group-hover:text-amber-800 transition-colors duration-300">
+                  {feature.title}
+                </h3>
+
+                {/* Description */}
+                <p className="relative text-sm text-stone-500 leading-relaxed group-hover:text-stone-600 transition-colors duration-300">
+                  {feature.desc}
+                </p>
+
+                {/* Ligne décorative */}
+                <div className="absolute bottom-0 left-8 right-8 h-[2px] bg-gradient-to-r from-transparent via-amber-300 to-transparent transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-center" />
               </div>
             ))}
           </div>
@@ -126,37 +185,115 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* All Products */}
-      <section className="py-20 bg-white" id="collection">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <p className="text-xs font-bold uppercase tracking-widest text-amber-700 mb-3">Notre Collection</p>
-            <h2 className="text-3xl sm:text-4xl font-bold text-stone-900 tracking-tight">Tous nos Sacs</h2>
+{/* All Products */}
+<section className="py-20 bg-white" id="collection">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="text-center mb-12">
+      <p className="text-xs font-bold uppercase tracking-widest text-amber-700 mb-3">Notre Collection</p>
+      <h2 className="text-3xl sm:text-4xl font-bold text-stone-900 tracking-tight">Tous nos Sacs</h2>
+    </div>
+
+    {/* Barre de recherche */}
+    <div className="relative z-10 max-w-2xl mx-auto mb-10">
+      <div className="relative group">
+        {/* Fond décoratif au focus */}
+        <div className="absolute -inset-1 bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 rounded-2xl opacity-0 group-focus-within:opacity-100 blur transition duration-500" />
+        
+        <div className="relative flex items-center bg-white rounded-2xl shadow-lg shadow-stone-200/50 border border-stone-100 group-focus-within:shadow-xl group-focus-within:shadow-amber-100/50 transition-all duration-500 overflow-hidden">
+          
+          {/* Icône de recherche */}
+          <div className="pl-5 pr-3">
+            <svg 
+              className="w-5 h-5 text-stone-400 group-focus-within:text-amber-600 transition-colors duration-300" 
+              xmlns="http://www.w3.org/2000/svg" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+            >
+              <circle cx="11" cy="11" r="8"/>
+              <path d="m21 21-4.3-4.3"/>
+            </svg>
           </div>
 
-          <div className="flex items-center justify-center gap-2 mb-10 flex-wrap">
-            {categories.map(cat => (
+          {/* Champ de recherche */}
+          <input
+            type="text"
+            placeholder="Rechercher un sac par nom, catégorie..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full py-4 pr-5 text-sm bg-transparent text-stone-700 placeholder-stone-400 focus:outline-none"
+          />
+
+          {/* Bouton effacer */}
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm('')}
+              className="mr-3 p-2 rounded-full hover:bg-stone-100 text-stone-400 hover:text-stone-600 transition-all duration-200"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          )}
+
+          {/* Bouton rechercher */}
+          <button 
+            onClick={() => {}}
+            className="hidden sm:flex items-center gap-2 mr-2 px-5 py-2.5 bg-amber-700 hover:bg-amber-800 text-white text-sm font-medium rounded-xl transition-all duration-300 hover:shadow-md hover:shadow-amber-900/20"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="m21 21-4.3-4.3"/>
+            </svg>
+            <span>Rechercher</span>
+          </button>
+        </div>
+
+        {/* Suggestions de recherche */}
+        {searchTerm && (
+          <div className="mt-2 flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-stone-400">Suggestions :</span>
+            {['Coton', 'Crochet', 'Pochette'].map(tag => (
               <button
-                key={cat.id}
-                onClick={() => setActiveCategory(cat.id)}
-                className={`px-5 py-2 text-xs font-semibold rounded-full transition-all duration-300 ${
-                  activeCategory === cat.id
-                    ? 'bg-amber-700 text-white shadow-md shadow-amber-900/20'
-                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-                }`}
+                key={tag}
+                onClick={() => setSearchTerm(tag)}
+                className="px-3 py-1 text-xs bg-stone-100 hover:bg-amber-50 text-stone-600 hover:text-amber-700 rounded-full transition-all duration-200 border border-stone-200 hover:border-amber-200"
               >
-                {cat.label}
+                {tag}
               </button>
             ))}
           </div>
+        )}
+      </div>
+    </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredProducts.map(product => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        </div>
-      </section>
+    <div className="flex items-center justify-center gap-2 mb-10 flex-wrap">
+      {categories.map(cat => (
+        <button
+          key={cat.id}
+          onClick={() => setActiveCategory(cat.id)}
+          className={`px-5 py-2 text-xs font-semibold rounded-full transition-all duration-300 ${
+            activeCategory === cat.id
+              ? 'bg-amber-700 text-white shadow-md shadow-amber-900/20'
+              : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+          }`}
+        >
+          {cat.label}
+        </button>
+      ))}
+    </div>
+
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {filteredProducts.map(product => (
+        <ProductCard key={product.id} product={product} />
+      ))}
+    </div>
+  </div>
+</section>
 
       {/* CTA Banner */}
       <section className="py-20 bg-stone-900 relative overflow-hidden">
@@ -166,7 +303,7 @@ export default function HomePage() {
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
-            Prêt à adopter une pièce d’exception ?
+            Prêt à adopter une pièce d'exception ?
           </h2>
           <p className="mt-4 text-base text-stone-400 max-w-lg mx-auto leading-relaxed">
             Chaque achat soutient directement les artisans locaux et préserve un savoir-faire ancestral
