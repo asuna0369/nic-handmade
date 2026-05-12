@@ -30,8 +30,8 @@ app.post('/api/create-checkout-session', express.json(), async (req, res) => {
     payment_method_types: ['card'],
     line_items,
     mode: 'payment',
-    success_url: 'http://localhost:5173/order-success?session_id={CHECKOUT_SESSION_ID}',
-    cancel_url: 'http://localhost:5173/checkout?canceled=true',
+    success_url: 'https://nic-handmade.vercel.app/order-success?session_id={CHECKOUT_SESSION_ID}',
+    cancel_url: 'https://nic-handmade.vercel.app/checkout?canceled=true',
     metadata: {
       order_id: orderId,
     },
