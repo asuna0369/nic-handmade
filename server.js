@@ -16,7 +16,7 @@ const supabaseAdmin = createClient(
 );
 
 // CORS : autoriser toutes les origines pour le moment (à restreindre plus tard)
-app.use(cors());
+app.use(cors({ origin: 'https://nic-handmade.vercel.app' }));
 
 // Route de création de session Stripe
 app.post('/api/create-checkout-session', express.json(), async (req, res) => {
