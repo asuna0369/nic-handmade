@@ -155,7 +155,7 @@ export default function ArtisanatPage() {
                 <div className="mt-10 flex items-center gap-4">
                   <div className="w-12 h-[1px] bg-amber-400" />
                   <span className="text-sm text-amber-800 uppercase tracking-widest font-bold">
-                    Madagascar
+                    Nic Handmade
                   </span>
                 </div>
               </div>
