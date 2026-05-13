@@ -178,7 +178,7 @@ export default function Footer() {
                     <MapPin className="w-3.5 h-3.5 text-amber-500 group-hover:text-white transition-colors" />
                   </div>
                   <span className="text-sm text-stone-400">
-                    Madagascar
+                    Suisse
                   </span>
                 </div>
               </li>
