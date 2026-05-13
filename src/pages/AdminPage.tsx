@@ -385,7 +385,8 @@ export default function AdminPage() {
                   <img src={product.image_url} alt={product.name} className="w-16 h-16 object-cover rounded-lg" />
                   <div>
                     <h3 className="font-semibold text-stone-900">{product.name}</h3>
-                    <p className="text-sm text-stone-500">{product.price.toLocaleString()} Ar — {product.category}</p>
+                    <p className="text-sm text-stone-500">{Number(product.price).toFixed(2)} € — {product.category}</p>
+
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -575,11 +576,18 @@ export default function AdminPage() {
                     className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-amber-500" rows={3} />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Prix (Ar)</label>
-                    <input type="number" required min={0} value={price} onChange={e => setPrice(Number(e.target.value))}
-                      className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-amber-500" />
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Prix (€)</label>
+                  <input 
+                    type="number" 
+                    required 
+                    min={0} 
+                    step="0.01"
+                    value={price} 
+                    onChange={e => setPrice(parseFloat(e.target.value) || 0)}
+                    className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-amber-500" 
+                  />
+                </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">Catégorie</label>
                     <select value={category} onChange={e => setCategory(e.target.value)}
