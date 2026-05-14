@@ -701,6 +701,7 @@ export default function AdminPage() {
                     <option value="Maroc">Maroc</option>
                     <option value="Inde">Inde</option>
                     <option value="Sénégal">Sénégal</option>
+                    <option value="Autre">Suisse</option>
                     <option value="Autre">Autre</option>
                   </select>
                 </div>
