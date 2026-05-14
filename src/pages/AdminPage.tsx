@@ -23,6 +23,13 @@ interface ContactMessage {
   created_at: string;
 }
 
+interface ProductImage {
+  id: string;
+  product_id: string;
+  image_url: string;
+  display_order: number;
+}
+
 export default function AdminPage() {
   const { navigate } = usePage();
   const [products, setProducts] = useState<Product[]>([]);
@@ -39,6 +46,8 @@ export default function AdminPage() {
   const [featured, setFeatured] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState('');
+  const [productImages, setProductImages] = useState<ProductImage[]>([]);
+  const [newImages, setNewImages] = useState<FileList | null>(null);
   const [mediaTitle, setMediaTitle] = useState('');
   const [mediaType, setMediaType] = useState<'image' | 'video'>('image');
   const [mediaSection, setMediaSection] = useState('gallery');
@@ -92,6 +101,16 @@ export default function AdminPage() {
     if (!error && data) setMessages(data);
   };
 
+  // Charger les images d'un produit
+  const loadProductImages = async (productId: string) => {
+    const { data } = await supabase
+      .from('product_images')
+      .select('*')
+      .eq('product_id', productId)
+      .order('display_order', { ascending: true });
+    if (data) setProductImages(data);
+  };
+
   useEffect(() => {
     if (session) {
       loadProducts();
@@ -110,6 +129,8 @@ export default function AdminPage() {
     setFeatured(false);
     setImageFile(null);
     setImagePreview('');
+    setNewImages(null);
+    setProductImages([]);
     setError('');
   };
 
@@ -121,7 +142,26 @@ export default function AdminPage() {
     setCategory(product.category);
     setFeatured(product.featured);
     setImagePreview(product.image_url);
+    setNewImages(null);
+    loadProductImages(product.id);
     setShowProductForm(true);
+  };
+
+  // Gestion des images multiples
+  const handleMultipleImages = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setNewImages(e.target.files);
+    }
+  };
+
+  const handleDeleteProductImage = async (imageId: string) => {
+    if (!window.confirm('Supprimer cette image ?')) return;
+    const { error } = await supabase.from('product_images').delete().eq('id', imageId);
+    if (!error && editingProduct) {
+      loadProductImages(editingProduct.id);
+      setSuccessMessage('✅ Image supprimée');
+      setTimeout(() => setSuccessMessage(''), 2000);
+    }
   };
 
   const handleSubmitProduct = async (e: React.FormEvent) => {
@@ -144,47 +184,71 @@ export default function AdminPage() {
     }
 
     try {
+      // 1. Upload de l'image principale (si modifiée)
       let image_url = editingProduct?.image_url || '';
-
       if (imageFile) {
         setUploading(true);
         const fileExt = imageFile.name.split('.').pop();
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const fileName = `${Date.now()}-main.${fileExt}`;
         const { error: uploadError } = await supabase.storage
           .from('product-images')
           .upload(fileName, imageFile);
-
         if (uploadError) throw uploadError;
-
         const { data: publicUrlData } = supabase.storage
           .from('product-images')
           .getPublicUrl(fileName);
-
         image_url = publicUrlData.publicUrl;
         setUploading(false);
       }
 
+      // 2. Créer ou mettre à jour le produit
       if (editingProduct) {
         const { error: updateError } = await supabase
           .from('products')
           .update({ ...productData, image_url })
           .eq('id', editingProduct.id);
         if (updateError) throw updateError;
-        setSuccessMessage('✅ Sac modifié avec succès !');
       } else {
         const { error: insertError } = await supabase
           .from('products')
           .insert([{ ...productData, image_url }]);
         if (insertError) throw insertError;
-        setSuccessMessage('🎉 Nouveau sac ajouté avec succès !');
       }
 
+      // 3. Upload des images supplémentaires (si nouvelles)
+      if (newImages && newImages.length > 0) {
+        const productId = editingProduct ? editingProduct.id : productData.id;
+        
+        for (let i = 0; i < newImages.length; i++) {
+          const file = newImages[i];
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${Date.now()}-extra-${i}.${fileExt}`;
+          
+          const { error: uploadError } = await supabase.storage
+            .from('product-images')
+            .upload(fileName, file);
+          
+          if (!uploadError) {
+            const { data: publicUrlData } = supabase.storage
+              .from('product-images')
+              .getPublicUrl(fileName);
+            
+            await supabase.from('product_images').insert({
+              product_id: productId,
+              image_url: publicUrlData.publicUrl,
+              display_order: editingProduct ? productImages.length + i + 1 : i + 2,
+            });
+          }
+        }
+      }
+
+      setSuccessMessage(editingProduct ? '✅ Sac modifié avec succès !' : '🎉 Nouveau sac ajouté avec succès !');
       setTimeout(() => setSuccessMessage(''), 3000);
       resetProductForm();
       setShowProductForm(false);
       loadProducts();
     } catch (err: any) {
-      setError(err.message || 'Erreur lors de l\'enregistrement');
+      setError(err.message || "Erreur lors de l'enregistrement");
     } finally {
       setSaving(false);
       setUploading(false);
@@ -193,6 +257,8 @@ export default function AdminPage() {
 
   const handleDeleteProduct = async (productId: string) => {
     if (!window.confirm('Confirmer la suppression du sac ?')) return;
+    // Supprimer d'abord les images liées
+    await supabase.from('product_images').delete().eq('product_id', productId);
     const { error } = await supabase.from('products').delete().eq('id', productId);
     if (error) {
       alert('Erreur suppression');
@@ -286,7 +352,7 @@ export default function AdminPage() {
       setShowMediaForm(false);
       loadMedia();
     } catch (err: any) {
-      setError(err.message || 'Erreur lors de l\'enregistrement');
+      setError(err.message || "Erreur lors de l'enregistrement");
     } finally {
       setSaving(false);
       setUploading(false);
@@ -386,7 +452,6 @@ export default function AdminPage() {
                   <div>
                     <h3 className="font-semibold text-stone-900">{product.name}</h3>
                     <p className="text-sm text-stone-500">{Number(product.price).toFixed(2)} € — {product.category}</p>
-
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -576,18 +641,18 @@ export default function AdminPage() {
                     className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-amber-500" rows={3} />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Prix (€)</label>
-                  <input 
-                    type="number" 
-                    required 
-                    min={0} 
-                    step="0.01"
-                    value={price} 
-                    onChange={e => setPrice(parseFloat(e.target.value) || 0)}
-                    className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-amber-500" 
-                  />
-                </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Prix (€)</label>
+                    <input 
+                      type="number" 
+                      required 
+                      min={0} 
+                      step="0.01"
+                      value={price} 
+                      onChange={e => setPrice(parseFloat(e.target.value) || 0)}
+                      className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-amber-500" 
+                    />
+                  </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">Catégorie</label>
                     <select value={category} onChange={e => setCategory(e.target.value)}
@@ -602,8 +667,10 @@ export default function AdminPage() {
                   <input type="checkbox" checked={featured} onChange={e => setFeatured(e.target.checked)} id="featured" />
                   <label htmlFor="featured" className="text-sm">Produit vedette ?</label>
                 </div>
+                
+                {/* Image principale */}
                 <div>
-                  <label className="block text-sm font-medium mb-1">Image</label>
+                  <label className="block text-sm font-medium mb-1">Image principale</label>
                   <input type="file" accept="image/*" onChange={e => {
                     const file = e.target.files?.[0];
                     if (file) {
@@ -615,6 +682,66 @@ export default function AdminPage() {
                     <img src={imagePreview} alt="Aperçu" className="mt-2 h-32 object-cover rounded-lg" />
                   )}
                 </div>
+
+                {/* Images supplémentaires */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Images supplémentaires</label>
+                  
+                  {/* Images existantes (en édition) */}
+                  {editingProduct && productImages.length > 0 && (
+                    <div className="grid grid-cols-3 gap-2 mb-3">
+                      {productImages.map((img, index) => (
+                        <div key={img.id} className="relative group">
+                          <img src={img.image_url} alt={`Image ${index + 1}`} className="w-full h-20 object-cover rounded-lg" />
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteProductImage(img.id)}
+                            className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {/* Upload de nouvelles images */}
+                  <div className="border-2 border-dashed border-stone-300 rounded-xl p-4 text-center hover:border-amber-400 transition-colors">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleMultipleImages}
+                      className="hidden"
+                      id="multiple-images"
+                    />
+                    <label htmlFor="multiple-images" className="cursor-pointer">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-stone-400 mx-auto mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21 15 16 10 5 21"/>
+                      </svg>
+                      <span className="text-sm text-stone-500">
+                        {newImages && newImages.length > 0 
+                          ? `${newImages.length} image(s) sélectionnée(s)` 
+                          : 'Cliquez pour ajouter des images'}
+                      </span>
+                      <span className="block text-xs text-stone-400 mt-1">Vous pouvez sélectionner plusieurs images</span>
+                    </label>
+                    
+                    {/* Prévisualisation des nouvelles images */}
+                    {newImages && newImages.length > 0 && (
+                      <div className="grid grid-cols-4 gap-2 mt-3">
+                        {Array.from(newImages).map((file, index) => (
+                          <div key={index} className="relative">
+                            <img src={URL.createObjectURL(file)} alt="Aperçu" className="w-full h-16 object-cover rounded-lg" />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 {error && <p className="text-red-600 text-sm">{error}</p>}
                 <div className="flex justify-end gap-3 pt-2">
                   <button type="button" onClick={() => { setShowProductForm(false); resetProductForm(); }}
