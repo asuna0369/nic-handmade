@@ -44,6 +44,9 @@ export default function AdminPage() {
   const [price, setPrice] = useState(0);
   const [category, setCategory] = useState('Crochet');
   const [featured, setFeatured] = useState(false);
+  const [matiere, setMatiere] = useState('Raphia naturel');
+  const [origine, setOrigine] = useState('Madagascar');
+  const [disponibilite, setDisponibilite] = useState('En stock');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState('');
   const [productImages, setProductImages] = useState<ProductImage[]>([]);
@@ -127,6 +130,9 @@ export default function AdminPage() {
     setPrice(0);
     setCategory('Crochet');
     setFeatured(false);
+    setMatiere('Raphia naturel');
+    setOrigine('Madagascar');
+    setDisponibilite('En stock');
     setImageFile(null);
     setImagePreview('');
     setNewImages(null);
@@ -141,6 +147,9 @@ export default function AdminPage() {
     setPrice(product.price);
     setCategory(product.category);
     setFeatured(product.featured);
+    setMatiere(product.matiere || 'Raphia naturel');
+    setOrigine(product.origine || 'Madagascar');
+    setDisponibilite(product.disponibilite || 'En stock');
     setImagePreview(product.image_url);
     setNewImages(null);
     loadProductImages(product.id);
@@ -177,6 +186,9 @@ export default function AdminPage() {
       category,
       featured,
       in_stock: true,
+      matiere,
+      origine,
+      disponibilite,
     };
 
     if (!editingProduct) {
@@ -257,7 +269,6 @@ export default function AdminPage() {
 
   const handleDeleteProduct = async (productId: string) => {
     if (!window.confirm('Confirmer la suppression du sac ?')) return;
-    // Supprimer d'abord les images liées
     await supabase.from('product_images').delete().eq('product_id', productId);
     const { error } = await supabase.from('products').delete().eq('id', productId);
     if (error) {
@@ -581,7 +592,6 @@ export default function AdminPage() {
                       })}
                     </span>
                     
-                    {/* Bouton Répondre */}
                     <a
                       href={`mailto:${msg.email}?subject=Réponse à votre message - Nic Handmade&body=Bonjour ${msg.name},%0D%0A%0D%0A`}
                       className="text-xs px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-full transition-colors font-medium flex items-center gap-1"
@@ -663,6 +673,50 @@ export default function AdminPage() {
                     </select>
                   </div>
                 </div>
+
+                {/* Matière */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">Matière</label>
+                  <select value={matiere} onChange={e => setMatiere(e.target.value)}
+                    className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-amber-500">
+                    <option value="Raphia naturel">Raphia naturel</option>
+                    <option value="Coton">Coton</option>
+                    <option value="Crochet">Crochet</option>
+                    <option value="Vannerie">Vannerie</option>
+                    <option value="Fibres naturelles">Fibres naturelles</option>
+                    <option value="Cuir">Cuir</option>
+                    <option value="Tissu">Tissu</option>
+                    <option value="Synthétique">Synthétique</option>
+                  </select>
+                </div>
+
+                {/* Origine */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">Origine</label>
+                  <select value={origine} onChange={e => setOrigine(e.target.value)}
+                    className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-amber-500">
+                    <option value="Madagascar">Madagascar</option>
+                    <option value="France">France</option>
+                    <option value="Italie">Italie</option>
+                    <option value="Maroc">Maroc</option>
+                    <option value="Inde">Inde</option>
+                    <option value="Sénégal">Sénégal</option>
+                    <option value="Autre">Autre</option>
+                  </select>
+                </div>
+
+                {/* Disponibilité */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">Disponibilité</label>
+                  <select value={disponibilite} onChange={e => setDisponibilite(e.target.value)}
+                    className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-amber-500">
+                    <option value="En stock">En stock</option>
+                    <option value="Rupture de stock">Rupture de stock</option>
+                    <option value="Sur commande">Sur commande</option>
+                    <option value="Bientôt disponible">Bientôt disponible</option>
+                  </select>
+                </div>
+
                 <div className="flex items-center gap-2">
                   <input type="checkbox" checked={featured} onChange={e => setFeatured(e.target.checked)} id="featured" />
                   <label htmlFor="featured" className="text-sm">Produit vedette ?</label>
@@ -687,7 +741,6 @@ export default function AdminPage() {
                 <div>
                   <label className="block text-sm font-medium mb-2">Images supplémentaires</label>
                   
-                  {/* Images existantes (en édition) */}
                   {editingProduct && productImages.length > 0 && (
                     <div className="grid grid-cols-3 gap-2 mb-3">
                       {productImages.map((img, index) => (
@@ -705,7 +758,6 @@ export default function AdminPage() {
                     </div>
                   )}
                   
-                  {/* Upload de nouvelles images */}
                   <div className="border-2 border-dashed border-stone-300 rounded-xl p-4 text-center hover:border-amber-400 transition-colors">
                     <input
                       type="file"
@@ -729,7 +781,6 @@ export default function AdminPage() {
                       <span className="block text-xs text-stone-400 mt-1">Vous pouvez sélectionner plusieurs images</span>
                     </label>
                     
-                    {/* Prévisualisation des nouvelles images */}
                     {newImages && newImages.length > 0 && (
                       <div className="grid grid-cols-4 gap-2 mt-3">
                         {Array.from(newImages).map((file, index) => (

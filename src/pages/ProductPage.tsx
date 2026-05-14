@@ -245,12 +245,13 @@ export default function ProductPage() {
               </button>
             </div>
 
+            {/* Détails du produit */}
             <div className="mt-8 grid grid-cols-2 gap-4">
               {[
-                { label: 'Matière', value: 'Raphia naturel' },
-                { label: 'Origine', value: 'Madagascar' },
+                { label: 'Matière', value: product.matiere || 'Raphia naturel' },
+                { label: 'Origine', value: product.origine || 'Madagascar' },
                 { label: 'Fabrication', value: '100% fait main' },
-                { label: 'Disponibilité', value: product.in_stock ? 'En stock' : 'Rupture' },
+                { label: 'Disponibilité', value: product.disponibilite || (product.in_stock ? 'En stock' : 'Rupture') },
               ].map(detail => (
                 <div key={detail.label} className="p-3 rounded-xl bg-stone-50">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400">

@@ -8,6 +8,10 @@ export interface Product {
   featured: boolean;
   in_stock: boolean;
   created_at: string;
+  matiere?: string;
+  origine?: string;
+  disponibilite?: string;
+
 }
 
 export interface CartItem {
